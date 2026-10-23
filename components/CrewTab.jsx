@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { CODE_TEAM_KEY } from "./CodeTeamWelcome";
 
 /*
   Crew tab for The 13th Hour.
@@ -374,7 +375,7 @@ function HighFives({ place, stateCities, onEarn }) {
 
 /* ---------- Badges ---------- */
 function Badges({ karma, vibeCounts }) {
-  const [stats, setStats] = useState({ vent: 0, checkin: {}, breaks: {}, fives: 0 });
+  const [stats, setStats] = useState({ vent: 0, checkin: {}, breaks: {}, fives: 0, codeTeam: false });
 
   // Re-read device stats whenever points change (points change when anything is completed)
   useEffect(() => {
@@ -387,11 +388,13 @@ function Badges({ karma, vibeCounts }) {
       checkin: checkin?.date === todayKey() ? checkin : {},
       breaks: breaks || {},
       fives: fives?.sentTotal || 0,
+      codeTeam: !!readJSON(CODE_TEAM_KEY),
     });
   }, [karma]);
 
   const vc = vibeCounts || {};
   const list = [
+    { icon: "🚨", name: "Code Team", how: "Join from a Code 13 invite", got: stats.codeTeam },
     { icon: "🩺", name: "First Check-In", how: "Log a shift vibe", got: Object.values(vc).some((n) => n > 0) },
     { icon: "🌊", name: "Meltdown Survivor", how: "Log a Drowning Together shift", got: (vc.drowning || 0) > 0 },
     { icon: "💧", name: "Hydration Hero", how: "Check off water today", got: !!stats.checkin.done?.water },

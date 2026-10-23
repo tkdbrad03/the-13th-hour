@@ -5,6 +5,7 @@ import BreaksTab from "./BreaksTab";
 import VentTab from "./VentTab";
 import CrewTab from "./CrewTab";
 import FeedbackSheet from "./FeedbackSheet";
+import CodeTeamWelcome, { CODE_TEAM_KEY, isCodeTeamLink } from "./CodeTeamWelcome";
 
 /*
   The 13th Hour — nurse stress-relief app prototype
@@ -131,6 +132,7 @@ const STATES = [
 ];
 
 const LOCATION_KEY = "the13thHour.location";
+const PTO_KEY = "the13thHour.ptoPoints";
 
 // Permission slips. Body segments: plain strings, or { t: "text", h: "g" | "p" } for green/purple highlights.
 const SLIPS = [
@@ -464,6 +466,48 @@ export default function The13thHour() {
   const [tab, setTab] = useState("shift");
   const [vibeCounts, setVibeCounts] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
+  const [codeTeam, setCodeTeam] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [ptoLoaded, setPtoLoaded] = useState(false);
+
+  // Load saved PTO Points, and handle Code Team invite links (…/?code=13)
+  useEffect(() => {
+    let saved = 0;
+    try {
+      saved = parseInt(localStorage.getItem(PTO_KEY) || "0", 10) || 0;
+    } catch {}
+    let member = false;
+    try {
+      member = !!localStorage.getItem(CODE_TEAM_KEY);
+    } catch {}
+    if (isCodeTeamLink()) {
+      try {
+        window.history.replaceState(null, "", window.location.pathname);
+      } catch {}
+      if (!member) {
+        try {
+          localStorage.setItem(CODE_TEAM_KEY, JSON.stringify({ joinedAt: Date.now() }));
+        } catch {}
+        member = true;
+        setShowWelcome(true);
+        saved += 13;
+        try {
+          localStorage.setItem(PTO_KEY, String(saved));
+        } catch {}
+      }
+    }
+    setKarma(saved);
+    setPtoLoaded(true);
+    setCodeTeam(member);
+  }, []);
+
+  // Keep PTO Points between visits
+  useEffect(() => {
+    if (!ptoLoaded) return;
+    try {
+      localStorage.setItem(PTO_KEY, String(karma));
+    } catch {}
+  }, [karma, ptoLoaded]);
   const [slipIdx, setSlipIdx] = useState(0);
   const touchX = useRef(null);
   const slip = SLIPS[slipIdx];
@@ -602,7 +646,7 @@ export default function The13thHour() {
           onClick={() => setShowFeedback(true)}
           className="relative z-10 flex items-center justify-center gap-2 px-4 pt-[max(0.4rem,env(safe-area-inset-top))] sm:pt-1.5 pb-1.5 bg-amber-400/10 border-b border-amber-400/20 text-[11px] font-semibold text-amber-100"
         >
-          <span>🧪 Prototype · some numbers are samples</span>
+          <span>{codeTeam ? "🚨 Code Team preview · some numbers are samples" : "🧪 Prototype · some numbers are samples"}</span>
           <span className="font-black text-amber-300 whitespace-nowrap">Feedback ›</span>
         </button>
 
@@ -1005,7 +1049,17 @@ export default function The13thHour() {
         )}
 
         {/* Feedback form */}
-        <FeedbackSheet open={showFeedback} onClose={() => setShowFeedback(false)} onEarn={earn} />
+        <FeedbackSheet open={showFeedback} onClose={() => setShowFeedback(false)} onEarn={earn} codeTeam={codeTeam} />
+
+        {/* Code Team welcome (from an invite link) */}
+        <CodeTeamWelcome
+          open={showWelcome}
+          onClose={() => setShowWelcome(false)}
+          onFeedback={() => {
+            setShowWelcome(false);
+            setShowFeedback(true);
+          }}
+        />
 
         {/* Toast */}
         {toast && (

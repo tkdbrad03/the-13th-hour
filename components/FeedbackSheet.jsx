@@ -24,6 +24,12 @@ const QUICK = [
   { id: "tell", q: "Would you tell a coworker about it?", options: ["🙌 Yes", "🤔 Maybe", "🙅 No"] },
 ];
 
+const SLIP = [
+  { id: "slipTitle", label: "Permission to…", ph: "Leave the Pyxis line for once", rows: 1 },
+  { id: "slipBody", label: "You are hereby authorized to…", ph: "…pretend you didn't hear the call light for 30 seconds while you finish your coffee.", rows: 3 },
+  { id: "slipCredit", label: "Credit me as (optional)", ph: "Nurse K., ICU — or leave blank to stay anonymous", rows: 1 },
+];
+
 const OPEN = [
   { id: "laugh", q: "What made you laugh or feel seen? 😂", ph: "The permission slips, the shredder…" },
   { id: "off", q: "What felt off, confusing, or cringe? 😬", ph: "Be honest — this is how it gets better." },
@@ -34,11 +40,16 @@ function buildText(a) {
   const lines = ["THE 13TH HOUR — PROTOTYPE FEEDBACK", ""];
   QUICK.forEach((x) => lines.push(`${x.q}\n→ ${a[x.id] || "—"}`, ""));
   OPEN.forEach((x) => lines.push(`${x.q}\n→ ${(a[x.id] || "").trim() || "—"}`, ""));
+  if (SLIP.some((x) => (a[x.id] || "").trim())) {
+    lines.push("✍️ MY PERMISSION SLIP");
+    SLIP.forEach((x) => lines.push(`${x.label} ${(a[x.id] || "").trim() || "—"}`));
+    lines.push("");
+  }
   lines.push(`Device: ${typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 120) : ""}`);
   return lines.join("\n");
 }
 
-export default function FeedbackSheet({ open, onClose, onEarn }) {
+export default function FeedbackSheet({ open, onClose, onEarn, codeTeam }) {
   const [a, setA] = useState({});
   const [sent, setSent] = useState(false);
   const [rewarded, setRewarded] = useState(false);
@@ -46,7 +57,8 @@ export default function FeedbackSheet({ open, onClose, onEarn }) {
   if (!open) return null;
 
   const set = (id, v) => setA((p) => ({ ...p, [id]: v }));
-  const answered = QUICK.filter((x) => a[x.id]).length + OPEN.filter((x) => (a[x.id] || "").trim()).length;
+  const answered =
+    QUICK.filter((x) => a[x.id]).length + [...OPEN, ...SLIP].filter((x) => (a[x.id] || "").trim()).length;
   const canSend = answered >= 2;
 
   const reward = () => {
@@ -84,7 +96,9 @@ export default function FeedbackSheet({ open, onClose, onEarn }) {
 
         <div className="px-5 pb-3 flex items-start justify-between gap-3 border-b border-zinc-800">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">Help shape The 13th Hour</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">
+              {codeTeam ? "🚨 Code Team report" : "Help shape The 13th Hour"}
+            </p>
             <h2 className="text-xl font-black leading-tight">Give feedback 💬</h2>
             <p className="text-xs text-zinc-400 mt-1">Takes about a minute. Answer as much or as little as you want.</p>
           </div>
@@ -158,6 +172,35 @@ export default function FeedbackSheet({ open, onClose, onEarn }) {
                   />
                 </div>
               ))}
+
+              <div className="rounded-2xl bg-[#fdfbf3] text-zinc-800 p-4 border-t-[10px] border-purple-600">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono">Optional · Write your own</p>
+                    <p className="text-base font-black leading-tight">Permission slip ✍️</p>
+                    <p className="text-xs text-zinc-600 mt-1">The best ones get added to the app — with credit if you want it.</p>
+                  </div>
+                  <span className="text-3xl font-serif font-black text-purple-600 leading-none">℞</span>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {SLIP.map((x) => (
+                    <div key={x.id}>
+                      <label htmlFor={`fb-${x.id}`} className="block text-xs font-bold text-purple-800 mb-1">
+                        {x.label}
+                      </label>
+                      <textarea
+                        id={`fb-${x.id}`}
+                        rows={x.rows}
+                        maxLength={400}
+                        value={a[x.id] || ""}
+                        onChange={(e) => set(x.id, e.target.value)}
+                        placeholder={x.ph}
+                        className="w-full resize-none rounded-xl bg-white/70 border border-zinc-300 focus:border-purple-500 focus:outline-none px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               <p className="text-[11px] text-zinc-500 leading-relaxed">
                 🔒 Your answers go by email, so they'll show the address you send from. Please leave out patient details.
