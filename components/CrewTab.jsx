@@ -31,7 +31,7 @@ const CARDS = [
   { id: "notalone", icon: "🫂", text: "You're not alone on this one.", tint: "from-purple-400/25 to-purple-600/10" },
   { id: "almost", icon: "⏰", text: "Almost shift change. Hang in there.", tint: "from-orange-400/25 to-orange-600/10" },
   { id: "hero", icon: "🦸", text: "Not all heroes wear capes. Some wear clogs.", tint: "from-sky-400/25 to-sky-600/10" },
-  { id: "water", icon: "💧", text: "Drink some water, you beautiful disaster.", tint: "from-cyan-400/25 to-cyan-600/10" },
+  { id: "water", icon: "💧", text: "Drink some water. You've earned it.", tint: "from-cyan-400/25 to-cyan-600/10" },
 ];
 
 const SEED_INBOX = [
