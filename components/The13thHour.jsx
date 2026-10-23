@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import BreaksTab from "./BreaksTab";
 import VentTab from "./VentTab";
 import CrewTab from "./CrewTab";
+import FeedbackSheet from "./FeedbackSheet";
 
 /*
   The 13th Hour — nurse stress-relief app prototype
@@ -332,6 +333,12 @@ function LocationSetup({ initial, onSave, onCancel }) {
         <p className="text-sm text-zinc-400 mt-2">
           See how nurses in your city and state are feeling right now.
         </p>
+        {!initial && (
+          <div className="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-xs text-amber-100 leading-relaxed">
+            <span className="font-black text-amber-300">🧪 Early preview.</span> Some numbers and messages are samples so
+            you can see how the app will work. Your feedback shapes what comes next — there's a feedback button inside.
+          </div>
+        )}
 
         <label className="block mt-8 text-xs font-bold uppercase tracking-widest text-purple-300">State</label>
         <div className="relative mt-2">
@@ -456,6 +463,7 @@ export default function The13thHour() {
   const [showSetup, setShowSetup] = useState(false);
   const [tab, setTab] = useState("shift");
   const [vibeCounts, setVibeCounts] = useState({});
+  const [showFeedback, setShowFeedback] = useState(false);
   const [slipIdx, setSlipIdx] = useState(0);
   const touchX = useRef(null);
   const slip = SLIPS[slipIdx];
@@ -589,8 +597,17 @@ export default function The13thHour() {
           <span className="tracking-widest">▂▄▆ 🔋</span>
         </div>
 
+        {/* Prototype banner */}
+        <button
+          onClick={() => setShowFeedback(true)}
+          className="relative z-10 flex items-center justify-center gap-2 px-4 pt-[max(0.4rem,env(safe-area-inset-top))] sm:pt-1.5 pb-1.5 bg-amber-400/10 border-b border-amber-400/20 text-[11px] font-semibold text-amber-100"
+        >
+          <span>🧪 Prototype · some numbers are samples</span>
+          <span className="font-black text-amber-300 whitespace-nowrap">Feedback ›</span>
+        </button>
+
         {/* App bar */}
-        <header className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-3 pb-3 border-b border-white/5 bg-[#0b0f14]/80 backdrop-blur">
+        <header className="relative z-10 flex items-center justify-between gap-3 px-5 pt-3 pb-3 border-b border-white/5 bg-[#0b0f14]/80 backdrop-blur">
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">Your shift survival kit</p>
             <h1 className="text-xl font-black tracking-tight leading-tight">
@@ -945,9 +962,15 @@ export default function The13thHour() {
           </>
           )}
 
-          <p className="text-center text-[11px] text-zinc-600 pt-2">
-            Made with 💜 for the ones who stay past the 12th hour.
-          </p>
+          <div className="pt-2 text-center space-y-3">
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="rounded-full border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-bold text-purple-200 active:scale-95 transition"
+            >
+              💬 Tell us what you think
+            </button>
+            <p className="text-[11px] text-zinc-600">Made with 💜 for the ones who stay past the 12th hour.</p>
+          </div>
         </main>
 
         {/* Bottom tab bar (stays pinned) */}
@@ -981,9 +1004,12 @@ export default function The13thHour() {
           />
         )}
 
+        {/* Feedback form */}
+        <FeedbackSheet open={showFeedback} onClose={() => setShowFeedback(false)} onEarn={earn} />
+
         {/* Toast */}
         {toast && (
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 rounded-full bg-zinc-100 text-zinc-900 text-sm font-bold px-4 py-2 shadow-lg whitespace-nowrap">
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[70] rounded-full bg-zinc-100 text-zinc-900 text-sm font-bold px-4 py-2 shadow-lg whitespace-nowrap">
             {toast}
           </div>
         )}
